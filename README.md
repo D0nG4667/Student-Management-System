@@ -28,7 +28,7 @@ A Student Management System showcasing Object-Oriented Programming principles. I
     # Create the student instance
     student = Student(first_name='Gabriel', last_name='Okundaye',
                       major=Major.COMPUTER_SCIENCE)
-                      
+
     # Create the instructor instance
     instructor = Instructor(first_name='Guido', last_name='Rossum',
                             department=Department.COMPUTER_SCIENCE)
@@ -78,7 +78,7 @@ After cloning this repo,
 - Run these commands in the root of the repo to explore the application:
 
 ```sh
-python run app.py
+python app.py
 
 ```
 
