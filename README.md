@@ -22,6 +22,8 @@ A Student Management System showcasing Object-Oriented Programming principles. I
 ## Sample Code
 
 ```sh
+    from utils.pydantic.student_management_system import Student, Instructor, Course, StudentManagementSystem
+
     # Create an instance of the student management system
     sms = StudentManagementSystem()
 
@@ -42,6 +44,15 @@ A Student Management System showcasing Object-Oriented Programming principles. I
 - Anaconda
 - Python
 - Pydantic
+- Sqlmodel
+- FastAPI
+- Docker
+- Redis
+- PostgreSQL
+
+### FastAPI backend- Demo
+
+[API](https://gabcares-sms-fastapi.hf.space/docs)
 
 ## Installation
 
@@ -79,6 +90,39 @@ After cloning this repo,
 
 ```sh
 python app.py
+
+```
+
+### FastAPI Setup
+
+### Prerequisites
+
+- [Docker Desktop](https://docs.docker.com/desktop/)
+
+After cloning this repo,
+
+- Add an env folder in the root of the project.
+
+- Create and env file named `api.env` using this sample
+
+```env
+# Redis
+REDIS_URL=redis://cache:6379/
+REDIS_USERNAME=default
+
+# Postgres
+POSTGRES_URL=postgresql+asyncpg://berkely:ucberkely@db:5432/studentmanagement_db
+POSTGRES_USER=berkely
+POSTGRES_PASSWORD=ucberkely
+POSTGRES_DB=studentmanagement_db
+```
+
+- Run these commands in the root of the repo to explore the student management API:
+
+```sh
+docker-compose pull
+
+docker-compose up --build
 
 ```
 
