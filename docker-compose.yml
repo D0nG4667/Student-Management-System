@@ -1,0 +1,55 @@
+services:
+  cache:
+    image: redis:7.2.3-alpine
+    container_name: cache-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      app-tier:
+
+  db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: berkely
+      POSTGRES_PASSWORD: ucberkely
+      POSTGRES_DB: studentmanagement_db
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      app-tier:
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    image: gabcares/sms-fastapi:latest
+    container_name: sms-fastapi
+    command: uvicorn main:app --host 0.0.0.0 --port 7860
+    volumes:
+      - api:/api
+    ports:
+      - "7860:7860"
+    env_file:
+      - path: ./env/api.env
+        required: true
+    depends_on:
+      - cache
+      - db
+    networks:
+      app-tier:
+
+networks:
+  app-tier:
+    driver: bridge
+
+volumes:
+  api:
+  redis_data: {}
+  postgres_data:
