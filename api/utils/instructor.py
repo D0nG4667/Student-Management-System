@@ -38,4 +38,4 @@ class Instructor(Person, table=True):
             str: A description of the instructor including their name, ID number, and department.
         """
 
-        return f"Instructor(name: {self.name}, id: {self.id}, department: {self.department.value})"
+        return f"Instructor(name: {self.name}, id: {self.id}, department: {self.department})"

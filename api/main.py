@@ -12,7 +12,7 @@ from fastapi_cache.backends.inmemory import InMemoryBackend
 # from fastapi_cache.coder import PickleCoder
 from fastapi_cache.decorator import cache
 
-from typing import Union, Optional, Type
+from typing import Union, Optional, Type, Any
 from utils.student import Student
 from utils.instructor import Instructor
 from utils.course import Course
@@ -128,6 +128,7 @@ class EndpointResponse(SQLModel):
     execution_msg: str
     execution_code: int
     result: ResultItem
+    # result: Any
 
 
 class ErrorResponse(SQLModel):
@@ -144,7 +145,7 @@ async def status_check():
     return {"Status": "API is online..."}
 
 
-async def endpoint_output(endpoint_result: Result, code: int = 0, error: str = None) -> Union[ErrorResponse, EndpointResponse]:
+async def endpoint_output(endpoint_result: ResultItem, code: int = 0, error: str = None) -> Union[ErrorResponse, EndpointResponse]:
     msg = 'Execution failed'
     output = ErrorResponse(**{'execution_msg': msg,
                               'execution_code': code, 'error': error})
@@ -171,10 +172,11 @@ async def endpoint_output(endpoint_result: Result, code: int = 0, error: str = N
 
 
 # Caching Post requests is challenging
-async def sms_posts(instance: Result, idx: str = None, action: str = "add") -> Union[ErrorResponse, EndpointResponse]:
+async def sms_posts(instance: ResultItem, idx: str = None, action: str = "add") -> Union[ErrorResponse, EndpointResponse]:
     async with AsyncSession(sms_resource["engine"]) as session:
-        code = 0
+        code = 1
         error = None
+        result = None
         existing = await session.get(instance.__class__, idx)
 
         # For add action, do db operation if instance is not existing. Other actions, do db operation if instance exists in db
@@ -183,25 +185,27 @@ async def sms_posts(instance: Result, idx: str = None, action: str = "add") -> U
         try:
             if checker:
                 if action == "delete":
-                    session.delete(instance)
+                    await session.delete(existing)  # Asynchronous
+                    await session.commit()
                 else:  # add or update use add
-                    session.add(instance)
-                await session.commit()
-                await session.refresh(instance)
-                code = 1
+                    session.add(instance)  # Not asynchronous
+                    await session.commit()
+                    await session.refresh(instance)
+                    result = instance
         except Exception as e:
-            error = e
+            code = 0
+            error = str(e)
 
         finally:
-            return await endpoint_output(instance, code, error)
+            return await endpoint_output(result, code, error)
 
 
 # @cache(expire=ONE_DAY_SEC, namespace='sms_gets')  # Cache for 1 day
 async def sms_gets(sms_class: Type[Result], action: str = "first", idx: str = None, stmt: SelectOfScalar[Type[Result]] = None) -> Union[ErrorResponse, EndpointResponse]:
     async with AsyncSession(sms_resource["engine"]) as session:
-        result = None
-        error = None
         code = 1
+        error = None
+        result = None
         try:
             if action == "all":
                 statement = select(sms_class) if stmt is None else stmt
@@ -216,7 +220,7 @@ async def sms_gets(sms_class: Type[Result], action: str = "first", idx: str = No
 
         except Exception as e:
             code = 0
-            error = e
+            error = str(e)
         finally:
             return await endpoint_output(result, code, error)
 
@@ -261,7 +265,7 @@ async def update_instructor(instructor: Instructor) -> Union[ErrorResponse, Endp
 
 
 @app.delete('/api/v1/sms/delete_instructor', tags=['Instructor'])
-async def delete_student(instructor: Instructor) -> Union[ErrorResponse, EndpointResponse]:
+async def delete_instructor(instructor: Instructor) -> Union[ErrorResponse, EndpointResponse]:
     return await sms_posts(instructor, instructor.id, action="delete")
 
 

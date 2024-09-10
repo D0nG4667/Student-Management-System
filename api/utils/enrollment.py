@@ -1,7 +1,5 @@
-from typing import Optional
 from utils.enums.grade import Grade
-
-from .student import Student
+import uuid
 
 from sqlmodel import SQLModel, Field, Relationship
 
@@ -17,7 +15,13 @@ class Enrollment(SQLModel, table=True):
         grade (Grade): The grade assigned to the student for the course. Default if NO_GRADE with enum value of None if no grade has been assigned yet.
     """
 
-    id: int = Field(primary_key=True)
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),  # Generates a UUID4 string
+        primary_key=True,
+        index=True,
+        nullable=False,
+        sa_column_kwargs={"unique": True}
+    )
     student_id: str = Field(foreign_key="student.id")
     course_id: str = Field(foreign_key="course.id")
     grade: Grade = Field(sa_column=Field(sa_type=Grade))
