@@ -34,4 +34,4 @@ class Student(Person, table=True):
             str: A description of the student including their name, ID number, and major.
         """
 
-        return f"Student(name: {self.name}, id: {self.id}, major: {self.major.value})"
+        return f"Student(name: {self.name}, id: {self.id}, major: {self.major})"
